@@ -1,57 +1,39 @@
+from functools import reduce
+
 import mouse
 import time
 from pynput import keyboard
 import pyautogui
+from PIL import Image
+from PIL import ImageChops
+import math, operator
 
-combination = [
-    {keyboard.KeyCode(char="n")},
-    {keyboard.KeyCode(char="N")}
-]
-exitCombination = [
-    {keyboard.KeyCode(char="e")},
-    {keyboard.KeyCode(char="E")}
-]
-current = set()
+img1 = Image.open("Screenshot (6).png")
+
+img2 = Image.open("Screenshot (7).png")
 
 
-# def execute():
-#     pyautogui.hotkey("winleft", "prtsc")
+# def equal(img1, img2):
+#     print(ImageChops.difference(img1, img2).getbbox())
+#     return ImageChops.difference(img1, img2).getbbox() is None
+def rmsdiff(im1, im2):
+    "Calculate the root-mean-square difference between two images"
+
+    h = ImageChops.difference(im1, im2).histogram()
+
+    # calculate rms
+    return math.sqrt(reduce(operator.add,
+                            map(lambda h, i: h * (i ** 2), h, range(256))
+                            ) / (float(im1.size[0]) * im1.size[1]))
+
+
+print(rmsdiff(img1, img2))
 
 
 def mouseMovement():
     while True:
         mouse.move(1900, 350, absolute=True, duration=3)
         time.sleep(4)
+
         mouse.move(2100, 350, absolute=True, duration=3)
         time.sleep(4)
-
-
-def on_press(key):
-    if any([key in COMBO for COMBO in combination]):
-        current.add(key)
-        if any(all(k in current for k in COMBO) for COMBO in combination):
-            mouseMovement()
-
-
-def on_release(key):
-    if any([key in COMBO for COMBO in combination]):
-        current.remove(key)
-
-
-def onExit(key):
-    if any([key in combo for combo in exitCombination]):
-        current.add(key)
-        if any(all(k in current for k in COMBO) for COMBO in combination):
-            exit()
-
-
-def onExitRelease(key):
-    if any([key in COMBO for COMBO in combination]):
-        current.remove(key)
-
-
-with keyboard.Listener(on_press=on_press, on_release=on_release) as listner:
-    listner.join()
-
-# with keyboard.Listener(on_press=onExit, on_release=onExitRelease) as listner:
-#     listner.join()
